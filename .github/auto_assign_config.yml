@@ -1,0 +1,7 @@
+addReviewers: true
+addAssignees: false
+useCodeOwners: true
+reviewers:
+  - kodurunani
+  - nitesh-chheda
+numberOfReviewers: 1
