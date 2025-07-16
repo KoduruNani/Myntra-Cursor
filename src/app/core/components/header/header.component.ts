@@ -123,7 +123,7 @@ import { CartService } from '../../services/cart.service';
     .user-actions {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px; /* Minor improvement */
     }
     a {
       text-decoration: none;
@@ -153,6 +153,8 @@ export class HeaderComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    console.log('HeaderComponent initialized'); // ✅ New line
+
     this.authService.getCurrentUser().subscribe(user => {
       this.currentUser = user;
     });
@@ -162,11 +164,11 @@ export class HeaderComponent implements OnInit {
     });
 
     this.cartService.getCartItems().subscribe(items => {
-      this.cartItemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+      this.cartItemCount = (items || []).reduce((sum, item) => sum + item.quantity, 0); // ✅ Safer fallback
     });
   }
 
   logout() {
     this.authService.logout();
   }
-} 
+}
