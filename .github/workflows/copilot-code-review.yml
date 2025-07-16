@@ -1,0 +1,42 @@
+name: Copilot Code Review Simulation
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  run-quality-checks:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Run Linter
+        run: |
+          npm run lint || echo "Lint issues detected" > lint_output.txt
+
+      - name: Type Check
+        run: |
+          npx tsc --noEmit || echo "Type check failed" >> lint_output.txt
+
+      - name: Simulated Copilot Review Comment
+        if: success() || failure()
+        run: |
+          echo "Copilot Review for PR #${{ github.event.pull_request.number }}:" > pr_review.txt
+          if [ -f lint_output.txt ]; then
+            cat lint_output.txt >> pr_review.txt
+          else
+            echo "Code looks clean. Well done! ✅" >> pr_review.txt
+          fi
+          gh pr comment ${{ github.event.pull_request.number }} --body "$(cat pr_review.txt)"
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "Code review workflow failed. Check Actions tab."
